@@ -1,0 +1,21 @@
+[22:59:49] Adressbook has been created!
+[23:02:41] Adressbook has been created!
+[23:06:36] Adressbook has been created!
+[23:09:18] Contact anna has been added.
+[23:09:18] Addressbook has been saved!
+[23:15:05] Addressbook has been loaded!
+[23:19:20] Addressbook has been loaded!
+[23:19:53] Contact anna has been added.
+[23:19:53] Addressbook has been saved!
+[23:26:12] Addressbook has been loaded!
+[23:40:39] Addressbook has been loaded!
+[23:41:39] Contact anna has been added.
+[23:41:39] Addressbook has been saved!
+[23:43:41] Addressbook has been loaded!
+[23:44:23] Contact aana,d has been added.
+[23:44:23] Addressbook has been saved!
+[23:46:22] Addressbook has been loaded!
+[23:48:12] Addressbook has been loaded!
+[23:50:07] Addressbook has been loaded!
+[23:51:24] Addressbook has been loaded!
+[23:52:57] Addressbook has been loaded!
