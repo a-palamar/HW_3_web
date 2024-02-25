@@ -36,11 +36,15 @@ def normalize(file_name):
 
 
 def check_parent_empty(parent: Path):
-    if not any(parent.iterdir()):
-        parent.rmdir()
-        # Ensure it doesn't go beyond the root directory
-        if parent != Path(sys.argv[1]):
-            check_parent_empty(parent.parent)
+    # Check if the parent directory exists
+    if parent.exists():
+        if not any(parent.iterdir()):
+            parent.rmdir()
+            # Ensure it doesn't go beyond the root directory
+            if parent != Path(sys.argv[1]):
+                check_parent_empty(parent.parent)
+    else:
+        return         # If the parent directory doesn't exist, no need to continue
 
 
 def get_categories(file: Path) -> str:
@@ -107,6 +111,8 @@ def sort_folder(path: Path) -> None:
             if category == "Archives":
                 archive_unpack(element, path.joinpath("Archives"))
             rename_and_move_file(element, category, path)
+        elif element.is_dir():
+            sort_folder()  # if element is folder, sort it recursively
 
     # Update known_extensions and unknown_extensions
             if category != "Unknown":
