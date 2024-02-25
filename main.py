@@ -66,25 +66,31 @@ def create_file_category(file: Path, category: str, dir: Path) -> None:
     target_dir = dir.joinpath(category)
     # Create dir if doesn't exist
     if not target_dir.exists():
-        target_dir.mkdir()
+        target_dir.mkdir(parents=True, exist_ok=True)
 
 
 def rename_and_move_file(file: Path, category: str, dir: Path) -> None:
     target_dir = dir.joinpath(category)
-    if category == "Unknown":
-        new_path = target_dir / file.name
+    if not target_dir.exists():
+        target_dir.mkdir(parents=True, exist_ok=True)
+
+    if file.exists():
+        if category == "Unknown":
+            new_path = target_dir / file.name
+        else:
+            normalized_name = normalize(file)
+            new_path = target_dir / normalized_name
+        counter = 1
+        extension = file.suffix
+        while new_path.exists():
+            base_name = file.stem
+            new_name = f"{base_name}_{counter}{extension}"
+            new_path = target_dir / new_name
+            counter += 1
+        # Rename (or move) the file to the target directory
+        file.rename(new_path)
     else:
-        normalized_name = normalize(file)
-        new_path = target_dir / normalized_name
-    counter = 1
-    extension = file.suffix
-    while new_path.exists():
-        base_name = file.stem
-        new_name = f"{base_name}_{counter}{extension}"
-        new_path = target_dir / new_name
-        counter += 1
-    # Rename (or move) the file to the target directory
-    file.rename(new_path)
+        print(f"File not found: {file}")
 
 
 def archive_unpack(file: Path, dir: Path):
@@ -101,20 +107,17 @@ lock = RLock()
 def sort_folder(path: Path) -> None:
     known_extensions = set()
     unknown_extensions = set()
-    elements = list(path.rglob("*"))  # get elements of the folder
 
     # Move&rename files to appropriate categories
-    for element in elements:
+    for element in path.rglob("*"):
         if element.is_file():
             category = get_categories(element)
             create_file_category(element, category, path)
             if category == "Archives":
                 archive_unpack(element, path.joinpath("Archives"))
             rename_and_move_file(element, category, path)
-        elif element.is_dir():
-            sort_folder()  # if element is folder, sort it recursively
 
-    # Update known_extensions and unknown_extensions
+            # Update known_extensions and unknown_extensions
             if category != "Unknown":
                 with lock:
                     known_extensions.add(element.suffix.lower())
@@ -122,13 +125,18 @@ def sort_folder(path: Path) -> None:
                 with lock:
                     unknown_extensions.add(element.suffix.lower())
 
-   # Update global known_list and unknown_list after processing
+    # Recursively sort subdirectories
+    for sub_dir in path.iterdir():
+        if sub_dir.is_dir():
+            sort_folder(sub_dir)
+
+    # Update global known_list and unknown_list after processing
     with lock:
         known_list.update(known_extensions)
         unknown_list.update(unknown_extensions)
 
-    # Remove dirs if they are empty
-    for element in elements:
+    # Remove empty directories
+    for element in path.iterdir():
         if element.is_dir() and not any(element.iterdir()):
             element.rmdir()
             check_parent_empty(element.parent)
