@@ -102,6 +102,7 @@ def archive_unpack(file: Path, dir: Path):
 
 # Reentrant lock for synchronization
 lock = RLock()
+threads = []
 
 
 def sort_folder(path: Path) -> None:
@@ -124,6 +125,9 @@ def sort_folder(path: Path) -> None:
             else:
                 with lock:
                     unknown_extensions.add(element.suffix.lower())
+        elif element.is_dir():
+            thread_dir = Thread(target=sort_folder, args=(element,))
+            threads.append(thread_dir)
 
     # Recursively sort subdirectories
     for sub_dir in path.iterdir():
@@ -153,6 +157,8 @@ def main() -> str:
 
     thread = Thread(target=sort_folder, args=(path,))
     thread.start()
+    for t in threads:
+        t.join()
     thread.join()
 
     print(f"Known extensions: {known_list}")
